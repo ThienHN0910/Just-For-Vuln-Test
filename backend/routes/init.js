@@ -4,8 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { getPool } = require('../db');
 
-// Endpoint to trigger DB schema migration & seed data
-router.post('/', async (req, res) => {
+async function handleInitDb(req, res) {
   try {
     const pool = await getPool();
     const sqlPath = path.join(__dirname, '../schema.sql');
@@ -14,15 +13,21 @@ router.post('/', async (req, res) => {
     await pool.request().batch(sqlContent);
 
     return res.json({
-      message: '✅ Database seed & migration completed successfully on remote database!'
+      status: 'success',
+      message: '✅ Database seed & migration completed successfully!'
     });
   } catch (err) {
     console.error('Init DB Error:', err);
     return res.status(500).json({
+      status: 'error',
       error: 'Migration execution failed',
       details: err.message
     });
   }
-});
+}
+
+// Support both GET and POST requests for /api/init-db
+router.get('/', handleInitDb);
+router.post('/', handleInitDb);
 
 module.exports = router;
