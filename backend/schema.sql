@@ -67,7 +67,7 @@ INSERT INTO Users (Username, Password, FullName, Email, Bio, Role, Avatar) VALUE
 ('admin', 'admin123', 'Administrator Account', 'admin@vulnshop.com', '<h2>System Admin</h2><p>Quyền quản trị tối cao toàn bộ hệ thống.</p>', 'admin', 'admin.png'),
 ('john_doe', 'user123', 'John Doe', 'john@example.com', 'Lập trình viên backend, đam mê security. <script>console.log("Bio XSS John")</script>', 'user', 'avatar1.jpg'),
 ('jane_smith', 'password123', 'Jane Smith', 'jane@example.com', 'VIP Customer - Khách hàng thân thiết', 'user', 'avatar2.jpg'),
-('alice_hack', 'hacker2026', 'Alice Security Tester', 'alice@sec.test', 'Tester payload security: <img src=x onerror="alert(\'Bio XSS Alice\')">', 'user', 'avatar1.jpg'),
+('alice_hack', 'hacker2026', 'Alice Security Tester', 'alice@sec.test', 'Tester payload security: <img src=x onerror="alert(''Bio XSS Alice'')">', 'user', 'avatar1.jpg'),
 ('bob_victim', 'secretpass99', 'Bob Victim User', 'bob@financial.org', 'Tài khoản mục tiêu thử nghiệm IDOR & lộ thông tin nhạy cảm.', 'user', 'avatar2.jpg');
 
 -- Seed Data: Products
@@ -101,5 +101,5 @@ INSERT INTO Reviews (ProductId, UserId, Comment, Rating) VALUES
 (1, 2, 'Máy chạy rất mượt, mát! <b class="text-success">Rất hài lòng về sản phẩm này!</b>', 5),
 (1, 4, '<script>alert("Stored XSS on Product Review 1")</script>Đánh giá sản phẩm tuyệt vời!', 5),
 (2, 3, 'Pin dùng thoải mái 1 ngày rưỡi. Màn hình rực rỡ!', 4),
-(2, 4, '<img src=x onerror="console.log(\'XSS Payload Loaded from Review\')">Thiết kế đẹp nhưng hơi nặng tay.', 3),
-(5, 2, 'Gõ rất êm tay, âm thanh thõa mãn! <iframe src="javascript:alert(\'XSS iframe\')"></iframe>', 5);
+(2, 4, '<img src=x onerror="console.log(''XSS Payload Loaded from Review'')">Thiết kế đẹp nhưng hơi nặng tay.', 3),
+(5, 2, 'Gõ rất êm tay, âm thanh thõa mãn! <iframe src="javascript:alert(''XSS iframe'')"></iframe>', 5);
