@@ -1,0 +1,23 @@
+{
+  "name": "just-for-vuln-test",
+  "version": "1.0.0",
+  "description": "Vulnerable E-Commerce Web Application (SQLi, XSS, IDOR, Secrets, Path Traversal)",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "start:backend": "npm run start --prefix backend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend"
+  },
+  "keywords": [
+    "security-testing",
+    "sqli",
+    "xss",
+    "idor",
+    "path-traversal",
+    "vue3",
+    "nodejs",
+    "mssql"
+  ],
+  "author": "",
+  "license": "ISC"
+}
