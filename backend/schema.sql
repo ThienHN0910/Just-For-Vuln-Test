@@ -62,23 +62,44 @@ CREATE TABLE Reviews (
     FOREIGN KEY (UserId) REFERENCES Users(Id)
 );
 
--- Seed Data
+-- Seed Data: Users
 INSERT INTO Users (Username, Password, FullName, Email, Bio, Role, Avatar) VALUES
-('admin', 'admin123', 'Administrator', 'admin@vulnshop.com', 'System Admin account', 'admin', 'admin.png'),
-('john_doe', 'user123', 'John Doe', 'john@example.com', 'Regular user profile', 'user', 'avatar1.jpg'),
-('jane_smith', 'password123', 'Jane Smith', 'jane@example.com', 'VIP Customer', 'user', 'avatar2.jpg');
+('admin', 'admin123', 'Administrator Account', 'admin@vulnshop.com', '<h2>System Admin</h2><p>Quyền quản trị tối cao toàn bộ hệ thống.</p>', 'admin', 'admin.png'),
+('john_doe', 'user123', 'John Doe', 'john@example.com', 'Lập trình viên backend, đam mê security. <script>console.log("Bio XSS John")</script>', 'user', 'avatar1.jpg'),
+('jane_smith', 'password123', 'Jane Smith', 'jane@example.com', 'VIP Customer - Khách hàng thân thiết', 'user', 'avatar2.jpg'),
+('alice_hack', 'hacker2026', 'Alice Security Tester', 'alice@sec.test', 'Tester payload security: <img src=x onerror="alert(\'Bio XSS Alice\')">', 'user', 'avatar1.jpg'),
+('bob_victim', 'secretpass99', 'Bob Victim User', 'bob@financial.org', 'Tài khoản mục tiêu thử nghiệm IDOR & lộ thông tin nhạy cảm.', 'user', 'avatar2.jpg');
 
+-- Seed Data: Products
 INSERT INTO Products (Name, Description, Price, Image, Category) VALUES
-('Laptop Gaming CyberX', 'Laptop gaming cau hinh cao Core i9, RTX 4080', 2499.99, 'laptop.jpg', 'Electronics'),
-('Smartphone Ultra Z', 'Dien thoai thong minh man hinh OLED 120Hz', 899.99, 'phone.jpg', 'Electronics'),
-('Tai nghe NoiseCancelling', 'Tai nghe chong on chu dong am thanh Hifi', 199.50, 'headphones.jpg', 'Audio'),
-('Ao thun Developer', 'Ao thun cotton in hinh code bug fixing', 25.00, 'tshirt.jpg', 'Fashion');
+('Laptop Gaming CyberX', 'Laptop gaming cấu hình cực cao Core i9, RTX 4080 16GB, RAM 32GB', 2499.99, 'laptop.jpg', 'Electronics'),
+('Smartphone Ultra Z', 'Điện thoại thông minh màn hình OLED 120Hz, Camera 108MP', 899.99, 'phone.jpg', 'Electronics'),
+('Tai nghe NoiseCancelling', 'Tai nghe chống ồn chủ động ANC âm thanh Hi-Res Audio', 199.50, 'headphones.jpg', 'Audio'),
+('Áo thun Developer', 'Áo thun 100% cotton in hình code bug fixing & refactoring', 25.00, 'tshirt.jpg', 'Fashion'),
+('Bàn phím Cơ RGB Custom', 'Bàn phím cơ Switch Gateron Yellow, keycap PBT dính LED RGB 16.8 triệu màu', 149.00, 'keyboard.jpg', 'Peripherals'),
+('Màn hình Cong 4K UltraWide 34 inch', 'Màn hình máy tính cong 144Hz HDR400 dành cho đồ họa và chơi game', 650.00, 'monitor.jpg', 'Electronics'),
+('Chuột Không Dây Ergonomic', 'Chuột máy tính công thái học chống mỏi cổ tay, cảm biến 26K DPI', 45.99, 'mouse.jpg', 'Peripherals'),
+('Balo Laptop Chống Nước SecPack', 'Balo đựng laptop 15.6 inch có ngăn khóa chống trộm và cổng sạc USB', 59.99, 'backpack.jpg', 'Accessories');
 
+-- Seed Data: Cart
+INSERT INTO Cart (UserId, ProductId, Quantity) VALUES
+(2, 3, 2),
+(2, 5, 1),
+(4, 1, 1),
+(5, 7, 3);
+
+-- Seed Data: Orders
 INSERT INTO Orders (UserId, TotalAmount, Status) VALUES
 (1, 2499.99, 'Completed'),
 (2, 224.50, 'Completed'),
-(3, 899.99, 'Processing');
+(3, 899.99, 'Processing'),
+(5, 5000.00, 'Shipped'),
+(4, 149.00, 'Pending');
 
+-- Seed Data: Reviews
 INSERT INTO Reviews (ProductId, UserId, Comment, Rating) VALUES
-(1, 2, 'May dung rat mượt! <b>Rất hài lòng</b>', 5),
-(2, 3, 'Pin dung duoc 1 ngay. Nice!', 4);
+(1, 2, 'Máy chạy rất mượt, mát! <b class="text-success">Rất hài lòng về sản phẩm này!</b>', 5),
+(1, 4, '<script>alert("Stored XSS on Product Review 1")</script>Đánh giá sản phẩm tuyệt vời!', 5),
+(2, 3, 'Pin dùng thoải mái 1 ngày rưỡi. Màn hình rực rỡ!', 4),
+(2, 4, '<img src=x onerror="console.log(\'XSS Payload Loaded from Review\')">Thiết kế đẹp nhưng hơi nặng tay.', 3),
+(5, 2, 'Gõ rất êm tay, âm thanh thõa mãn! <iframe src="javascript:alert(\'XSS iframe\')"></iframe>', 5);

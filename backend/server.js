@@ -10,6 +10,7 @@ const userRoutes = require('./routes/users');
 const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/orders');
 const fileRoutes = require('./routes/files');
+const initRoutes = require('./routes/init');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/init-db', initRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Vulnerable E-Commerce Backend is running' });
