@@ -1,39 +1,56 @@
 <template>
   <div>
-    <div class="row mb-4">
-      <div class="col-md-8 offset-md-2">
-        <form @submit.prevent="fetchProducts" class="input-group">
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            class="form-control" 
-            placeholder="Tìm kiếm sản phẩm (Test SQL Injection: ' OR '1'='1 hoặc Reflected XSS: <img src=x onerror=alert(1)>)"
-          />
-          <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-        </form>
+    <!-- Hero Banner -->
+    <div class="p-5 mb-4 bg-white rounded-3 shadow-sm border text-center">
+      <h1 class="display-6 fw-bold text-dark mb-2">Chào mừng đến với VulnShop 🛒</h1>
+      <p class="lead text-secondary mb-4">Khám phá các sản phẩm công nghệ, phụ kiện và thời trang chất lượng cao với giá ưu đãi tốt nhất.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <form @submit.prevent="fetchProducts" class="input-group input-group-lg">
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              class="form-control" 
+              placeholder="Nhập tên sản phẩm bạn muốn tìm kiếm..." 
+            />
+            <button class="btn btn-primary px-4" type="submit">Tìm kiếm</button>
+          </form>
+        </div>
       </div>
     </div>
 
-    <!-- Reflected XSS Vulnerability Display -->
-    <div v-if="lastSearch" class="alert alert-info">
-      Kết quả tìm kiếm cho: <span v-html="lastSearch"></span>
+    <!-- Search query reflection (Reflected XSS preserved under the hood) -->
+    <div v-if="lastSearch" class="alert alert-light border shadow-sm mb-4">
+      Kết quả tìm kiếm phù hợp với: <span v-html="lastSearch" class="fw-semibold"></span>
     </div>
 
-    <div v-if="error" class="alert alert-danger">
-      <strong>Lỗi backend:</strong> {{ error }}
+    <div v-if="error" class="alert alert-danger shadow-sm">
+      <strong>Lỗi kết nối:</strong> {{ error }}
+    </div>
+
+    <!-- Products Grid -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="fw-bold mb-0">Danh sách sản phẩm</h3>
+      <span class="text-muted">{{ products.length }} sản phẩm tìm thấy</span>
     </div>
 
     <div class="row">
-      <div v-for="product in products" :key="product.Id" class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">{{ product.Name }}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">${{ product.Price }} - {{ product.Category }}</h6>
-            <p class="card-text">{{ product.Description }}</p>
-          </div>
-          <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-            <router-link :to="`/product/${product.Id}`" class="btn btn-outline-primary btn-sm">Xem Chi Tiết</router-link>
-            <button class="btn btn-success btn-sm" @click="addToCart(product.Id)">Thêm giỏ hàng 🛒</button>
+      <div v-for="product in products" :key="product.Id" class="col-md-3 col-sm-6 mb-4">
+        <div class="card h-100 shadow-sm border-0 transition-hover">
+          <div class="card-body d-flex flex-column">
+            <div class="mb-2">
+              <span class="badge bg-secondary mb-2">{{ product.Category }}</span>
+              <h5 class="card-title text-dark fw-bold mb-1">{{ product.Name }}</h5>
+            </div>
+            <p class="card-text text-muted small flex-grow-1">{{ product.Description }}</p>
+            <div class="mt-3">
+              <h4 class="text-primary fw-bold mb-3">${{ Number(product.Price).toFixed(2) }}</h4>
+              <div class="d-grid gap-2">
+                <router-link :to="`/product/${product.Id}`" class="btn btn-outline-primary btn-sm">Xem chi tiết</router-link>
+                <button class="btn btn-primary btn-sm" @click="addToCart(product.Id)">Thêm vào giỏ</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -76,11 +93,21 @@ export default {
           productId: productId,
           quantity: 1
         });
-        alert('Đã thêm sản phẩm vào giỏ hàng!');
+        alert('Đã thêm sản phẩm vào giỏ hàng thành công!');
       } catch (err) {
-        alert('Lỗi thêm giỏ hàng: ' + (err.response?.data?.error || err.message));
+        alert('Không thể thêm sản phẩm: ' + (err.response?.data?.error || err.message));
       }
     }
   }
 };
 </script>
+
+<style scoped>
+.transition-hover {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.transition-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>

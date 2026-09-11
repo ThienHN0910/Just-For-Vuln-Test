@@ -1,45 +1,43 @@
 <template>
   <div class="row justify-content-center">
     <div class="col-md-8">
-      <div class="card p-4 shadow">
-        <h3 class="card-title mb-3">Chỉnh Sửa Hồ Sơ (IDOR & Stored XSS Test)</h3>
-        
-        <div class="alert alert-warning">
-          <strong>IDOR Vulnerability Test:</strong> Thay đổi User ID ở ô bên dưới để tải hoặc sửa hồ sơ của người dùng khác (ví dụ: chuyển ID thành 1 để sửa profile Admin).
-        </div>
-
-        <div class="mb-3 d-flex gap-2">
-          <input v-model="targetUserId" type="number" class="form-control" style="width: 150px;" placeholder="User ID" />
-          <button @click="loadProfile" class="btn btn-secondary">Tải Hồ Sơ Target</button>
-        </div>
+      <div class="card border-0 shadow-sm p-4">
+        <h3 class="fw-bold mb-4">Thông tin cá nhân & Hồ sơ</h3>
 
         <form v-if="profile" @submit.prevent="updateProfile">
-          <div class="mb-3">
-            <label class="form-label">Họ và Tên:</label>
-            <input v-model="profile.FullName" type="text" class="form-control" />
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Họ và Tên:</label>
+              <input v-model="profile.FullName" type="text" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email liên hệ:</label>
+              <input v-model="profile.Email" type="email" class="form-control" />
+            </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Email:</label>
-            <input v-model="profile.Email" type="email" class="form-control" />
+            <label class="form-label fw-semibold">Tên tài khoản (Username):</label>
+            <input v-model="profile.Username" type="text" class="form-control bg-light" readonly />
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Tên file Avatar:</label>
-            <input v-model="profile.Avatar" type="text" class="form-control" />
+            <label class="form-label fw-semibold">Ảnh đại diện (Avatar File):</label>
+            <input v-model="profile.Avatar" type="text" class="form-control" placeholder="avatar1.jpg" />
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Tiểu sử (Bio - Test Stored XSS: &lt;h2&gt;Hacked&lt;/h2&gt;&lt;script&gt;alert('XSS')&lt;/script&gt;):</label>
-            <textarea v-model="profile.Bio" class="form-control" rows="3"></textarea>
+            <label class="form-label fw-semibold">Tiểu sử & Giới thiệu bản thân:</label>
+            <textarea v-model="profile.Bio" class="form-control" rows="3" placeholder="Mô tả ngắn về bạn..."></textarea>
           </div>
 
-          <div class="card bg-light p-3 mb-3">
-            <h6>Xem trước Bio (Render unescaped v-html):</h6>
-            <div v-html="profile.Bio"></div>
+          <!-- Preview Bio (Stored XSS rendering preserved via v-html) -->
+          <div class="card bg-light border-0 p-3 mb-4">
+            <h6 class="fw-semibold text-secondary mb-2">Xem trước hiển thị Bio:</h6>
+            <div v-html="profile.Bio" class="text-dark"></div>
           </div>
 
-          <button type="submit" class="btn btn-primary fw-bold">Cập Nhật Hồ Sơ Target (IDOR)</button>
+          <button type="submit" class="btn btn-primary px-4 fw-bold">Lưu thay đổi</button>
         </form>
       </div>
     </div>
@@ -53,33 +51,33 @@ export default {
   name: 'ProfileView',
   data() {
     return {
-      targetUserId: 2,
+      userId: 2,
       profile: null
     };
   },
   mounted() {
     const user = JSON.parse(localStorage.getItem('user') || '{"id": 2}');
-    this.targetUserId = user.id;
+    this.userId = user.id;
     this.loadProfile();
   },
   methods: {
     async loadProfile() {
       try {
-        const res = await axios.get(`/api/users/${this.targetUserId}`);
+        const res = await axios.get(`/api/users/${this.userId}`);
         this.profile = res.data;
       } catch (err) {
-        alert('Lỗi tải hồ sơ: ' + (err.response?.data?.error || err.message));
+        alert('Không thể tải thông tin hồ sơ: ' + (err.response?.data?.error || err.message));
       }
     },
     async updateProfile() {
       try {
-        await axios.put(`/api/users/${this.targetUserId}`, {
+        await axios.put(`/api/users/${this.userId}`, {
           fullName: this.profile.FullName,
           email: this.profile.Email,
           bio: this.profile.Bio,
           avatar: this.profile.Avatar
         });
-        alert(`Đã cập nhật thành công hồ sơ của User ID ${this.targetUserId}!`);
+        alert('Cập nhật thông tin hồ sơ thành công!');
         this.loadProfile();
       } catch (err) {
         alert('Lỗi cập nhật hồ sơ: ' + (err.response?.data?.error || err.message));

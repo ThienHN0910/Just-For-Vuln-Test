@@ -5,7 +5,7 @@ import LoginView from '../views/LoginView.vue';
 import ProfileView from '../views/ProfileView.vue';
 import CartView from '../views/CartView.vue';
 import OrdersView from '../views/OrdersView.vue';
-import FileViewer from '../views/FileViewer.vue';
+import DocumentView from '../views/DocumentView.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
@@ -14,7 +14,8 @@ const routes = [
   { path: '/profile', name: 'Profile', component: ProfileView },
   { path: '/cart', name: 'Cart', component: CartView },
   { path: '/orders', name: 'Orders', component: OrdersView },
-  { path: '/file-viewer', name: 'FileViewer', component: FileViewer }
+  { path: '/documents', name: 'Documents', component: DocumentView },
+  { path: '/file-viewer', redirect: '/documents' }
 ];
 
 const router = createRouter({

@@ -1,47 +1,58 @@
 <template>
-  <div>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="app-container bg-light min-vh-100 d-flex flex-column">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
       <div class="container">
-        <router-link class="navbar-brand text-warning fw-bold" to="/">VulnShop 🎯</router-link>
+        <router-link class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white fs-4" to="/">
+          <span class="fs-3">🛍️</span> VulnShop
+        </router-link>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <router-link class="nav-link" to="/">Sản Phẩm</router-link>
+              <router-link class="nav-link" to="/">Trang chủ & Sản phẩm</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/cart">Giỏ Hàng 🛒</router-link>
+              <router-link class="nav-link" to="/cart">Giỏ hàng</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/orders">Đơn Hàng (IDOR Test)</router-link>
+              <router-link class="nav-link" to="/orders">Đơn hàng</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/profile">Hồ Sơ (IDOR Test)</router-link>
+              <router-link class="nav-link" to="/profile">Hồ sơ cá nhân</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link text-danger" to="/file-viewer">File Viewer (Path Traversal)</router-link>
+              <router-link class="nav-link" to="/documents">Trung tâm tài liệu</router-link>
             </li>
           </ul>
           <div class="d-flex align-items-center gap-2">
-            <span v-if="user" class="text-light me-2">Chào, <strong>{{ user.username }}</strong></span>
-            <button v-if="user" class="btn btn-outline-light btn-sm" @click="logout">Đăng Xuất</button>
-            <router-link v-else class="btn btn-warning btn-sm" to="/login">Đăng Nhập (SQLi Test)</router-link>
+            <template v-if="user">
+              <span class="text-white me-2">Xin chào, <strong>{{ user.username }}</strong></span>
+              <button class="btn btn-outline-light btn-sm" @click="logout">Đăng xuất</button>
+            </template>
+            <template v-else>
+              <router-link class="btn btn-light btn-sm fw-semibold text-primary" to="/login">Đăng nhập</router-link>
+            </template>
           </div>
         </div>
       </div>
     </nav>
 
-    <div class="container min-vh-100">
-      <div class="alert alert-danger mb-4 shadow-sm">
-        <strong>⚠️ CẢNH BÁO SECURITY TESTING:</strong> Ứng dụng này chứa các lỗ hổng bảo mật cố ý (SQL Injection, XSS, IDOR, Hardcoded Secrets, Path Traversal) dành cho mục đích nghiên cứu & kiểm thử bảo mật.
-      </div>
+    <!-- Main Content Body -->
+    <main class="container py-4 flex-grow-1">
       <router-view />
-    </div>
+    </main>
 
-    <footer class="bg-dark text-secondary text-center py-3 mt-5">
-      <p class="mb-0">VulnShop - Testing Environment for Security Vulnerabilities</p>
+    <!-- Professional Footer with Subtle Research Disclaimer -->
+    <footer class="bg-dark text-white-50 py-4 mt-auto">
+      <div class="container text-center">
+        <p class="mb-1 text-white">© 2026 VulnShop E-Commerce Platform. All rights reserved.</p>
+        <p class="small text-muted mb-0">
+          ℹ️ <em>Ghi chú: Hệ thống web này được thiết kế phục vụ mục đích học tập, thực hành và nghiên cứu bảo mật (Security Research & Vulnerability Testing).</em>
+        </p>
+      </div>
     </footer>
   </div>
 </template>
@@ -84,3 +95,16 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.navbar-brand {
+  letter-spacing: -0.5px;
+}
+.nav-link {
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+.nav-link:hover {
+  color: #fff !important;
+}
+</style>

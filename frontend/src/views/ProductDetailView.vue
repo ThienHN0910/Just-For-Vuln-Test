@@ -1,36 +1,61 @@
 <template>
   <div v-if="product" class="row">
-    <div class="col-md-6">
-      <div class="card p-4 shadow-sm mb-4">
-        <h2>{{ product.Name }}</h2>
-        <h4 class="text-success">${{ product.Price }}</h4>
-        <p class="badge bg-secondary">{{ product.Category }}</p>
-        <p class="mt-3">{{ product.Description }}</p>
+    <!-- Product Info Card -->
+    <div class="col-md-7 mb-4">
+      <div class="card border-0 shadow-sm p-4">
+        <span class="badge bg-secondary mb-2 align-self-start">{{ product.Category }}</span>
+        <h2 class="fw-bold mb-2">{{ product.Name }}</h2>
+        <h3 class="text-primary fw-bold mb-3">${{ Number(product.Price).toFixed(2) }}</h3>
+        
+        <hr class="my-3" />
+        
+        <h5 class="fw-bold">Mô tả sản phẩm:</h5>
+        <p class="text-secondary leading-relaxed">{{ product.Description }}</p>
+
+        <div class="mt-4 d-flex gap-3">
+          <button class="btn btn-primary px-4 py-2" @click="addToCart(product.Id)">🛒 Thêm vào giỏ hàng</button>
+          <router-link to="/" class="btn btn-outline-secondary px-4 py-2">Quay lại</router-link>
+        </div>
       </div>
     </div>
-    
-    <div class="col-md-6">
-      <div class="card p-4 shadow-sm">
-        <h4>Đánh giá sản phẩm</h4>
-        <hr />
-        
-        <!-- Form add review -->
-        <form @submit.prevent="submitReview" class="mb-4">
-          <div class="mb-2">
-            <label class="form-label">Nhận xét (Test Stored XSS: &lt;img src=x onerror=alert('StoredXSS')&gt;):</label>
-            <textarea v-model="newReview" class="form-control" rows="2" required></textarea>
+
+    <!-- Reviews Section -->
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm p-4">
+        <h4 class="fw-bold mb-3">Đánh giá từ khách hàng</h4>
+        <hr class="mb-4" />
+
+        <!-- Add Review Form -->
+        <form @submit.prevent="submitReview" class="mb-4 bg-light p-3 rounded">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Viết nhận xét của bạn:</label>
+            <textarea v-model="newReview" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..." required></textarea>
           </div>
-          <button type="submit" class="btn btn-primary btn-sm">Gửi Đánh Giá</button>
+          <div class="d-flex justify-content-between align-items-center">
+            <select v-model="rating" class="form-select form-select-sm w-auto">
+              <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+              <option value="4">⭐⭐⭐⭐ (4/5)</option>
+              <option value="3">⭐⭐⭐ (3/5)</option>
+              <option value="2">⭐⭐ (2/5)</option>
+              <option value="1">⭐ (1/5)</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm px-3">Gửi đánh giá</button>
+          </div>
         </form>
 
-        <!-- List Reviews with Stored XSS Vulnerability (v-html) -->
-        <div v-for="rev in reviews" :key="rev.Id" class="border-bottom py-2">
-          <div class="d-flex justify-content-between">
-            <strong>{{ rev.Username || 'Khách' }}</strong>
-            <span class="text-warning">★ {{ rev.Rating }}/5</span>
+        <!-- Reviews List (Stored XSS preserved via v-html) -->
+        <div v-if="reviews.length === 0" class="text-muted text-center py-3">
+          Chưa có đánh giá nào cho sản phẩm này.
+        </div>
+        <div v-else class="reviews-list">
+          <div v-for="rev in reviews" :key="rev.Id" class="border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <strong class="text-dark">{{ rev.Username || 'Khách hàng' }}</strong>
+              <span class="badge bg-warning text-dark">★ {{ rev.Rating }}/5</span>
+            </div>
+            <!-- Render review comment (Stored XSS vulnerable under the hood) -->
+            <div v-html="rev.Comment" class="text-secondary small mt-1"></div>
           </div>
-          <!-- VULNERABILITY: Renders unescaped comment html -->
-          <div v-html="rev.Comment" class="mt-1"></div>
         </div>
       </div>
     </div>
@@ -46,7 +71,8 @@ export default {
     return {
       product: null,
       reviews: [],
-      newReview: ''
+      newReview: '',
+      rating: 5
     };
   },
   mounted() {
@@ -60,7 +86,7 @@ export default {
         this.product = res.data.product;
         this.reviews = res.data.reviews;
       } catch (err) {
-        alert('Lỗi tải sản phẩm: ' + err.message);
+        alert('Không thể tải thông tin sản phẩm: ' + err.message);
       }
     },
     async submitReview() {
@@ -70,12 +96,25 @@ export default {
         await axios.post(`/api/products/${id}/reviews`, {
           userId: user.id,
           comment: this.newReview,
-          rating: 5
+          rating: Number(this.rating)
         });
         this.newReview = '';
         this.loadProduct();
       } catch (err) {
         alert('Lỗi gửi đánh giá: ' + err.message);
+      }
+    },
+    async addToCart(productId) {
+      const user = JSON.parse(localStorage.getItem('user') || '{"id": 1}');
+      try {
+        await axios.post('/api/cart/add', {
+          userId: user.id,
+          productId: productId,
+          quantity: 1
+        });
+        alert('Đã thêm sản phẩm vào giỏ hàng thành công!');
+      } catch (err) {
+        alert('Không thể thêm sản phẩm: ' + err.message);
       }
     }
   }
