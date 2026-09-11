@@ -1,24 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { poolPromise } = require('../db');
+const { getPool } = require('../db');
 
-// VULNERABILITY 4: Hardcoded fallback secret in code
 const HARDCODED_JWT_SECRET = 'hardcoded_vulnerable_secret_123';
 const JWT_SECRET = process.env.JWT_SECRET || HARDCODED_JWT_SECRET;
 
-// VULNERABILITY 1: SQL Injection in Login endpoint
+// SQL Injection in Login endpoint
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const pool = await poolPromise;
-    if (!pool) {
-      return res.status(500).json({ error: 'Database connection error' });
-    }
+    const pool = await getPool();
 
-    // RAW UNEXCAPED SQL QUERY - INTENTIONAL SQL INJECTION VULNERABILITY
-    // Payload test: ' OR '1'='1
+    // RAW UNEXCAPED SQL QUERY - INTENTIONAL SQL INJECTION
     const query = `SELECT * FROM Users WHERE Username = '${username}' AND Password = '${password}'`;
     console.log('[DEBUG SQL Query]:', query);
 
@@ -48,7 +43,7 @@ router.post('/login', async (req, res) => {
     }
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).json({ error: err.message, queryDetails: 'SQL syntax error if injected' });
+    return res.status(500).json({ error: 'Login error', details: err.message });
   }
 });
 

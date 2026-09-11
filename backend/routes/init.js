@@ -2,16 +2,12 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { poolPromise } = require('../db');
+const { getPool } = require('../db');
 
 // Endpoint to trigger DB schema migration & seed data
 router.post('/', async (req, res) => {
   try {
-    const pool = await poolPromise;
-    if (!pool) {
-      return res.status(500).json({ error: 'Database pool connection failed' });
-    }
-
+    const pool = await getPool();
     const sqlPath = path.join(__dirname, '../schema.sql');
     const sqlContent = fs.readFileSync(sqlPath, 'utf8');
 

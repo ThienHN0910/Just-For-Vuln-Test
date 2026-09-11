@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { poolPromise } = require('../db');
+const { getPool } = require('../db');
 
 // Get cart for a user
 router.get('/:userId', async (req, res) => {
   const userId = req.params.userId;
   try {
-    const pool = await poolPromise;
+    const pool = await getPool();
     const result = await pool.request().query(`
       SELECT c.Id as CartId, c.Quantity, p.* 
       FROM Cart c 
@@ -15,7 +15,7 @@ router.get('/:userId', async (req, res) => {
     `);
     res.json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Database query error', details: err.message });
   }
 });
 
@@ -23,14 +23,14 @@ router.get('/:userId', async (req, res) => {
 router.post('/add', async (req, res) => {
   const { userId, productId, quantity } = req.body;
   try {
-    const pool = await poolPromise;
+    const pool = await getPool();
     await pool.request().query(`
       INSERT INTO Cart (UserId, ProductId, Quantity) 
       VALUES (${userId}, ${productId}, ${quantity || 1})
     `);
     res.json({ message: 'Item added to cart' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Database insert error', details: err.message });
   }
 });
 
