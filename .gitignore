@@ -27,3 +27,4 @@ Thumbs.db
 # Scratch & Temporary files
 .scratch/
 tmp/
+backend/migrate.js

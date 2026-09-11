@@ -1,14 +1,16 @@
 const mssql = require('mssql');
-require('dotenv').config({ path: '../.env' });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config();
 
 const config = {
-  user: process.env.DB_USER || 'sa',
-  password: process.env.DB_PASSWORD || 'Password123!',
-  server: process.env.DB_SERVER || 'localhost',
-  database: process.env.DB_NAME || 'VulnShopDB',
-  port: parseInt(process.env.DB_PORT, 10) || 1433,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_NAME,
+  port: parseInt(process.env.DB_PORT || '1433', 10),
   options: {
-    encrypt: false, // Set to true if using Azure
+    encrypt: process.env.DB_ENCRYPT === 'true',
     trustServerCertificate: true
   }
 };
@@ -20,7 +22,7 @@ const poolPromise = new mssql.ConnectionPool(config)
     return pool;
   })
   .catch(err => {
-    console.error('Database Connection Failed! Bad Config: ', err);
+    console.error('Database Connection Failed:', err);
   });
 
 module.exports = {

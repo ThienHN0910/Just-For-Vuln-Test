@@ -1,23 +1,12 @@
--- Database creation script for MSSQL (Microsoft SQL Server)
--- Database Name: VulnShopDB
+-- Database schema & initial seed data script for MSSQL
 
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'VulnShopDB')
-BEGIN
-    CREATE DATABASE VulnShopDB;
-END
-GO
-
-USE VulnShopDB;
-GO
-
--- Drop tables if exists
+-- Drop existing tables if they exist
 IF OBJECT_ID('dbo.Reviews', 'U') IS NOT NULL DROP TABLE dbo.Reviews;
 IF OBJECT_ID('dbo.OrderItems', 'U') IS NOT NULL DROP TABLE dbo.OrderItems;
 IF OBJECT_ID('dbo.Orders', 'U') IS NOT NULL DROP TABLE dbo.Orders;
 IF OBJECT_ID('dbo.Cart', 'U') IS NOT NULL DROP TABLE dbo.Cart;
 IF OBJECT_ID('dbo.Products', 'U') IS NOT NULL DROP TABLE dbo.Products;
 IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL DROP TABLE dbo.Users;
-GO
 
 -- Users Table
 CREATE TABLE Users (
@@ -72,7 +61,6 @@ CREATE TABLE Reviews (
     FOREIGN KEY (ProductId) REFERENCES Products(Id),
     FOREIGN KEY (UserId) REFERENCES Users(Id)
 );
-GO
 
 -- Seed Data
 INSERT INTO Users (Username, Password, FullName, Email, Bio, Role, Avatar) VALUES
@@ -94,4 +82,3 @@ INSERT INTO Orders (UserId, TotalAmount, Status) VALUES
 INSERT INTO Reviews (ProductId, UserId, Comment, Rating) VALUES
 (1, 2, 'May dung rat mượt! <b>Rất hài lòng</b>', 5),
 (2, 3, 'Pin dung duoc 1 ngay. Nice!', 4);
-GO
