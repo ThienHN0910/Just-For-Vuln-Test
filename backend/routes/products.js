@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
 
-// Get all products or search (VULNERABILITY: SQL Injection & Reflected XSS)
+// Get all products or search (VULNERABILITY: SQL Injection stacked query support)
 router.get('/', async (req, res) => {
   const search = req.query.search || '';
 
@@ -10,19 +10,31 @@ router.get('/', async (req, res) => {
     const pool = await getPool();
     let query = `SELECT * FROM Products`;
     if (search) {
-      // RAW CONCATENATION - SQL INJECTION
-      query += ` WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
+      // INTENTIONAL SQL INJECTION VULNERABILITY:
+      // Supports stacked queries / raw string injection (e.g., search = a'; SELECT * FROM Users;--)
+      query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
     }
     console.log('[DEBUG Product Query]:', query);
 
     const result = await pool.request().query(query);
 
+    // If query returns multiple recordsets (stacked query injection like SELECT * FROM Users),
+    // send back all recordsets raw so security testers can inspect extracted data!
+    if (result.recordsets && result.recordsets.length > 1) {
+      return res.json({
+        searchTerm: search,
+        products: result.recordsets[0],
+        rawRecordsets: result.recordsets, // Extra leaked stacked query results!
+        rawResult: result
+      });
+    }
+
     res.json({
-      searchTerm: search, // Reflected XSS when rendered in frontend
-      products: result.recordset
+      searchTerm: search,
+      products: result.recordset || []
     });
   } catch (err) {
-    res.status(500).json({ error: 'Database query error', details: err.message });
+    res.status(500).json({ error: 'Database query error', details: err.message, queryExecuted: req.query.search });
   }
 });
 

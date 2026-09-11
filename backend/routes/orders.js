@@ -2,7 +2,28 @@ const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
 
-// IDOR - Get order by ID
+// Get all orders belonging to a specific user (e.g. GET /api/orders/user/2)
+router.get('/user/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT o.*, u.Username, u.FullName 
+      FROM Orders o 
+      JOIN Users u ON o.UserId = u.Id 
+      WHERE o.UserId = ${userId}
+      ORDER BY o.CreatedAt DESC
+    `);
+
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: 'Database query error', details: err.message });
+  }
+});
+
+// VULNERABILITY: IDOR - Get single order details by ID (GET /api/orders/:id)
+// Checks if requester is a logged-in user (role checked), BUT fails to check if order belongs to the requester (no ownership check)!
 router.get('/:id', async (req, res) => {
   const orderId = req.params.id;
 
@@ -25,7 +46,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Checkout cart
+// Checkout cart to create order
 router.post('/checkout', async (req, res) => {
   const { userId, totalAmount } = req.body;
   try {

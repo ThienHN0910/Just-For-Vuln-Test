@@ -5,6 +5,7 @@ import LoginView from '../views/LoginView.vue';
 import ProfileView from '../views/ProfileView.vue';
 import CartView from '../views/CartView.vue';
 import OrdersView from '../views/OrdersView.vue';
+import OrderDetailView from '../views/OrderDetailView.vue';
 import DocumentView from '../views/DocumentView.vue';
 
 const routes = [
@@ -14,6 +15,7 @@ const routes = [
   { path: '/profile', name: 'Profile', component: ProfileView },
   { path: '/cart', name: 'Cart', component: CartView },
   { path: '/orders', name: 'Orders', component: OrdersView },
+  { path: '/orders/:id', name: 'OrderDetail', component: OrderDetailView },
   { path: '/documents', name: 'Documents', component: DocumentView },
   { path: '/file-viewer', redirect: '/documents' }
 ];

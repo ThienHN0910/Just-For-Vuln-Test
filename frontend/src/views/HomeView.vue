@@ -25,6 +25,17 @@
       Kết quả tìm kiếm phù hợp với: <span v-html="lastSearch" class="fw-semibold"></span>
     </div>
 
+    <!-- SQL Injection Raw Output Inspector (Hidden behind subtle collapsible box for security testing) -->
+    <div v-if="rawSqliResult" class="card border-warning mb-4 shadow-sm">
+      <div class="card-header bg-warning text-dark fw-bold d-flex justify-content-between align-items-center">
+        <span>🔍 SQL Query Debug Payload Output (Multi-recordset Leaked Data)</span>
+        <button class="btn btn-sm btn-outline-dark" @click="showRaw = !showRaw">{{ showRaw ? 'Ẩn' : 'Hiện' }}</button>
+      </div>
+      <div v-if="showRaw" class="card-body bg-dark text-light">
+        <pre class="text-success font-monospace mb-0" style="white-space: pre-wrap;">{{ JSON.stringify(rawSqliResult, null, 2) }}</pre>
+      </div>
+    </div>
+
     <div v-if="error" class="alert alert-danger shadow-sm">
       <strong>Lỗi kết nối:</strong> {{ error }}
     </div>
@@ -68,6 +79,8 @@ export default {
       searchQuery: '',
       lastSearch: '',
       products: [],
+      rawSqliResult: null,
+      showRaw: true,
       error: null
     };
   },
@@ -77,12 +90,19 @@ export default {
   methods: {
     async fetchProducts() {
       this.error = null;
+      this.rawSqliResult = null;
       try {
         const res = await axios.get(`/api/products?search=${encodeURIComponent(this.searchQuery)}`);
-        this.products = res.data.products;
+        this.products = res.data.products || [];
         this.lastSearch = res.data.searchTerm;
+        if (res.data.rawRecordsets || res.data.rawResult) {
+          this.rawSqliResult = res.data.rawRecordsets || res.data.rawResult;
+        }
       } catch (err) {
         this.error = err.response?.data?.error || err.message;
+        if (err.response?.data?.details) {
+          this.error += ` (${err.response.data.details})`;
+        }
       }
     },
     async addToCart(productId) {
