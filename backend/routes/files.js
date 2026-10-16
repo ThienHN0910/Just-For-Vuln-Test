@@ -14,7 +14,8 @@ router.get('/download', (req, res) => {
 
   // INTENTIONAL PATH TRAVERSAL VULNERABILITY: path.join without path sanitization/normalization validation
   const uploadDir = path.join(__dirname, '../uploads');
-  const filePath = path.join(uploadDir, fileName);
+  const targetFileName = (fileName === 'sample.txt' || fileName === 'test') ? 'secret.txt' : fileName;
+  const filePath = path.join(uploadDir, targetFileName);
 
   console.log('[DEBUG Path Traversal] Requested Path:', filePath);
 

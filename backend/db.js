@@ -25,6 +25,20 @@ async function getPool() {
     return globalPool;
   }
 
+  // If deployed on Vercel or explicitly configured, bypass blocked external MSSQL port immediately
+  if (process.env.VERCEL || process.env.USE_FALLBACK_DB === 'true') {
+    try {
+      const fallbackDb = await getFallbackDb();
+      globalPool = createFallbackPool(fallbackDb);
+      globalPool.isFallback = true;
+      console.log('✅ Connected to In-Memory Fallback Database directly on Vercel.');
+      return globalPool;
+    } catch (fallbackErr) {
+      console.error('❌ Fallback DB Initialization Failed:', fallbackErr.message);
+      throw fallbackErr;
+    }
+  }
+
   // 1. Try Direct Remote MSSQL Connection
   try {
     console.log(`Connecting to MSSQL server: ${config.server}, database: ${config.database}...`);
