@@ -11,11 +11,10 @@ router.get('/', async (req, res) => {
     const pool = await getPool();
     let query = `SELECT * FROM Products`;
     if (category) {
-      // INTENTIONAL SQL INJECTION: Boolean differential & Time-based blind probe support
+      // INTENTIONAL SQL INJECTION (CWE-89): Boolean differential & time-based delay verification
       query = `SELECT * FROM Products WHERE Category = '${category}'`;
     } else if (search) {
-      // INTENTIONAL SQL INJECTION VULNERABILITY:
-      // Supports stacked queries / raw string injection (e.g., search = a'; SELECT * FROM Users;--)
+      // INTENTIONAL SQL INJECTION (CWE-89): Stacked query & string concatenation verification
       query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
     }
     console.log('[DEBUG Product Query]:', query);
