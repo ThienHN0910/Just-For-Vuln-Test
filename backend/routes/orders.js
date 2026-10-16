@@ -26,6 +26,10 @@ router.get('/user/:userId', async (req, res) => {
 // Checks if requester is a logged-in user (role checked), BUT fails to check if order belongs to the requester (no ownership check)!
 router.get('/:id', async (req, res) => {
   const orderId = req.params.id;
+  const authHeader = req.headers['authorization'];
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Unauthorized: Authentication required to view order details' });
+  }
 
   try {
     const pool = await getPool();
