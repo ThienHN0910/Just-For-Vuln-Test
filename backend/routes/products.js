@@ -81,7 +81,7 @@ router.post('/:id/reviews', async (req, res) => {
   }
 });
 
-// Reflected XSS Preview Endpoint
+// Reflected XSS Preview Endpoint (CWE-79 Dynamic Verification Probe)
 router.get('/preview/echo', (req, res) => {
   const q = req.query.q || req.query.search || '';
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
