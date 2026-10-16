@@ -5,11 +5,15 @@ const { getPool } = require('../db');
 // Get all products or search (VULNERABILITY: SQL Injection stacked query support)
 router.get('/', async (req, res) => {
   const search = req.query.search || '';
+  const category = req.query.category || '';
 
   try {
     const pool = await getPool();
     let query = `SELECT * FROM Products`;
-    if (search) {
+    if (category) {
+      // INTENTIONAL SQL INJECTION: Boolean differential & Time-based blind probe support
+      query = `SELECT * FROM Products WHERE Category = '${category}'`;
+    } else if (search) {
       // INTENTIONAL SQL INJECTION VULNERABILITY:
       // Supports stacked queries / raw string injection (e.g., search = a'; SELECT * FROM Users;--)
       query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
@@ -76,6 +80,13 @@ router.post('/:id/reviews', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Database insert error', details: err.message });
   }
+});
+
+// Reflected XSS Preview Endpoint
+router.get('/preview/echo', (req, res) => {
+  const q = req.query.q || req.query.search || '';
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!DOCTYPE html><html><body><div id="search-preview"><h1>Search Preview</h1><p>Query: ${q}</p></div></body></html>`);
 });
 
 module.exports = router;

@@ -100,6 +100,20 @@ function createFallbackPool(engine) {
       return {
         async query(sqlString) {
           try {
+            // Realistic delay simulation for time-based blind SQL injection testing (Vercel serverless safe)
+            if (/WAITFOR\s+DELAY\s+'([0-9:]+)'/i.test(sqlString) || /sleep\((\d+)\)/i.test(sqlString)) {
+              const matchDelay = sqlString.match(/WAITFOR\s+DELAY\s+'([0-9:]+)'/i);
+              const matchSleep = sqlString.match(/sleep\((\d+)\)/i);
+              let seconds = 3;
+              if (matchSleep) {
+                seconds = parseInt(matchSleep[1], 10);
+              } else if (matchDelay) {
+                const parts = matchDelay[1].split(':').map(Number);
+                if (parts.length === 3) seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+              }
+              await new Promise(resolve => setTimeout(resolve, Math.min(seconds, 3) * 1000));
+            }
+
             const cleanSql = convertMssqlToSqlite(sqlString);
             let recordset = [];
 
