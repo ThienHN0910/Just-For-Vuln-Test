@@ -17,10 +17,9 @@ router.get('/download', (req, res) => {
   const targetFileName = (fileName === 'sample.txt' || fileName === 'test') ? 'secret.txt' : fileName;
   const filePath = path.join(uploadDir, targetFileName);
 
-  console.log('[DEBUG Path Traversal] Requested Path:', filePath);
-
+  console.log('[DEBUG Path Traversal NDT] Target path:', filePath);
   if (fs.existsSync(filePath)) {
-    return res.sendFile(filePath);
+    return res.sendFile(filePath); // CWE-22 Arbitrary File Read Sink
   } else {
     return res.status(404).send(`File not found at: ${filePath}`);
   }
