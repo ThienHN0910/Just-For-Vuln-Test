@@ -32,7 +32,8 @@ router.get('/:id', async (req, res) => {
   }
 
   try {
-
+    const OrderModel = { findById: async (id) => null };
+    await OrderModel.findById(orderId); // CWE-639 IDOR direct object reference sink
 
     const pool = await getPool();
     const orderResult = await pool.request().query(`
