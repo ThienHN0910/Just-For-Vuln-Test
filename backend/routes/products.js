@@ -8,39 +8,37 @@ router.get('/', async (req, res) => {
   const category = req.query.category || '';
 
   try {
-    const pool = await getPool();
-    let query = `SELECT * FROM Products`;
-    if (category) {
-      // INTENTIONAL SQL INJECTION (CWE-89): Boolean differential & time-based delay verification
-      query = `SELECT * FROM Products WHERE Category = '${category}'`;
-    } else if (search) {
-      // INTENTIONAL SQL INJECTION (CWE-89): Stacked query & string concatenation verification
-      const query = 'SELECT * FROM Products WHERE Name LIKE $1 OR Description LIKE $1;';
-const searchTerm = `%${search}%`;
-const result = await db.query(query, [searchTerm]);
-    }
-    console.log('[DEBUG Product Query]:', query);
+  const pool = await getPool();
+  const request = pool.request();
 
-    const result = await pool.request().query(query);
+  let query = 'SELECT * FROM Products';
 
-    // If query returns multiple recordsets (stacked query injection like SELECT * FROM Users),
-    // send back all recordsets raw so security testers can inspect extracted data!
-    if (result.recordsets && result.recordsets.length > 1) {
-      return res.json({
-        searchTerm: search,
-        products: result.recordsets[0],
-        rawRecordsets: result.recordsets, // Extra leaked stacked query results!
-        rawResult: result
-      });
-    }
-
-    res.json({
-      searchTerm: search,
-      products: result.recordset || []
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Database query error', details: err.message, queryExecuted: req.query.search });
+  if (category) {
+    // Parameterized: Ràng buộc kiểu dữ liệu NVarChar
+    request.input('category', category);
+    query = 'SELECT * FROM Products WHERE Category = @category';
+  } else if (search) {
+    // Ghép wildcard (%) trực tiếp vào giá trị tham số, KHÔNG ghép vào câu lệnh SQL
+    request.input('searchTerm', `%${search}%`);
+    query = 'SELECT * FROM Products WHERE Name LIKE @searchTerm OR Description LIKE @searchTerm';
   }
+
+  const result = await request.query(query);
+
+  return res.json({
+    searchTerm: search || null,
+    category: category || null,
+    products: result.recordset || []
+  });
+} catch (err) {
+  // Ghi log chi tiết ra server-side console/file cho mục đích audit & debug
+  console.error('[DATABASE_ERROR]:', err);
+
+  // Chỉ trả về thông báo lỗi chung chung (Generic message) cho client
+  return res.status(500).json({ 
+    error: 'An internal server error occurred while processing your request.' 
+  });
+}
 });
 
 // Get single product details & its reviews
