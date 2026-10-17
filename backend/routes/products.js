@@ -15,7 +15,9 @@ router.get('/', async (req, res) => {
       query = `SELECT * FROM Products WHERE Category = '${category}'`;
     } else if (search) {
       // INTENTIONAL SQL INJECTION (CWE-89): Stacked query & string concatenation verification
-      query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
+      const query = 'SELECT * FROM Products WHERE Name LIKE $1 OR Description LIKE $1;';
+const searchTerm = `%${search}%`;
+const result = await db.query(query, [searchTerm]);
     }
     console.log('[DEBUG Product Query]:', query);
 
