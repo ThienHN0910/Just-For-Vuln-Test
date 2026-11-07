@@ -5,7 +5,7 @@ async function findByName(pool, name) {
 }
 
 async function findById(pool, id) {
-  const safeId = parseInt(id, 10);
+  const safeId = id;
   return pool.request().query('SELECT * FROM Products WHERE Id = ' + safeId);
 }
 
