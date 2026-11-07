@@ -88,4 +88,10 @@ router.get('/preview/echo', (req, res) => {
   res.send(`<!DOCTYPE html><html><body><div id="search-preview"><h1>Search Preview</h1><p>Query: ${query}</p></div></body></html>`);
 });
 
+router.get('/by-sku', async (req, res) => {
+  const pool = await getPool();
+  const r = await pool.request().query(`SELECT * FROM Products WHERE Sku = '${req.query.sku}'`);
+  res.json(r.recordset);
+});
+
 module.exports = router;
