@@ -1,4 +1,3 @@
-// retest M2: comment only
 const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
@@ -87,12 +86,6 @@ router.get('/preview/echo', (req, res) => {
   const query = req.query.q || req.query.search || '';
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(`<!DOCTYPE html><html><body><div id="search-preview"><h1>Search Preview</h1><p>Query: ${query}</p></div></body></html>`);
-});
-
-router.get('/by-sku', async (req, res) => {
-  const pool = await getPool();
-  const r = await pool.request().query(`SELECT * FROM Products WHERE Name = '${req.query.sku}'`);
-  res.json(r.recordset);
 });
 
 module.exports = router;
