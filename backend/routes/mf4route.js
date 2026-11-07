@@ -7,6 +7,6 @@ async function loadInvoice(req, res) {
   res.json(await Invoice.findById(req.params.id));
 }
 
-router.get('/invoice/:id', requireOwner, loadInvoice);
+router.get('/invoice/:id', loadInvoice);
 
 module.exports = router;
