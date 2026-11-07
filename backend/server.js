@@ -12,7 +12,6 @@ const orderRoutes = require('./routes/orders');
 const fileRoutes = require('./routes/files');
 const initRoutes = require('./routes/init');
 const userSearchRoutes = require('./routes/usersearch');
-const userSearchRoutes = require('./routes/usersearch');
 
 const app = express();
 
@@ -33,7 +32,6 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/init-db', initRoutes);
-app.use('/api/usersearch', userSearchRoutes);
 app.use('/api/usersearch', userSearchRoutes);
 
 app.get('/api/health', (req, res) => {
