@@ -25,7 +25,7 @@ const apiKey = 'q7Zp2LxV9mKt4RfW8nYb3HcJ6sTg1DeA';
 // padding line 22 keeps later edits outside the diff hunk of the secret
 // padding line 23 keeps later edits outside the diff hunk of the secret
 // padding line 24 keeps later edits outside the diff hunk of the secret
-// padding line 25 keeps later edits outside the diff hunk of the secret
+// padding line 25 edited keeps later edits outside the diff hunk of the secret
 // padding line 26 keeps later edits outside the diff hunk of the secret
 // padding line 27 keeps later edits outside the diff hunk of the secret
 // padding line 28 keeps later edits outside the diff hunk of the secret
