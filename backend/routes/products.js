@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
-const { findById } = require('../lib/catalog');
+const { findById, findByName } = require('../lib/catalog');
 
 // Get all products or search (VULNERABILITY: SQL Injection stacked query support)
 router.get('/', async (req, res) => {
@@ -93,6 +93,13 @@ router.get('/preview/echo', (req, res) => {
 router.get('/by-id/:id', async (req, res) => {
   const pool = await getPool();
   const result = await findById(pool, req.params.id);
+  res.json(result.recordset);
+});
+
+// Retest #454 C1: request input reaches an unchanged helper's SQL sink.
+router.get('/by-name', async (req, res) => {
+  const pool = await getPool();
+  const result = await findByName(pool, req.query.q);
   res.json(result.recordset);
 });
 
