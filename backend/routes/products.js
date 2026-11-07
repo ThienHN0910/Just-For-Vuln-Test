@@ -17,6 +17,9 @@ try {
       // INTENTIONAL SQL INJECTION (CWE-89): Stacked query & string concatenation verification
       query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
     }
+    if (req.query.sort) {
+      query += ` ORDER BY ${req.query.sort}`;
+    }
     console.log('[DEBUG Product Query]:', query);
 
     const result = await pool.request().query(query);
