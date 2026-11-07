@@ -63,5 +63,3 @@ Dự án đã được scaffold cấu hình theo tiêu chuẩn Matt Pocock:
 - **Domain docs**: Single-context repository structure với root `CONTEXT.md`. Chi tiết tại [docs/agents/domain.md](file:///E:/workspace/srcPrj/JFVT/docs/agents/domain.md) và [AGENTS.md](file:///E:/workspace/srcPrj/JFVT/AGENTS.md).
 
    
-
-<!-- S9 docs only -->

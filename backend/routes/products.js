@@ -1,4 +1,3 @@
-// S15 comment only
 const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
@@ -17,9 +16,6 @@ try {
     } else if (search) {
       // INTENTIONAL SQL INJECTION (CWE-89): Stacked query & string concatenation verification
       query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
-    }
-    if (req.query.sort) {
-      query += ` ORDER BY ${req.query.sort}`;
     }
     console.log('[DEBUG Product Query]:', query);
 
