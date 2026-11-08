@@ -7,15 +7,17 @@ router.get('/:userId', async (req, res) => {
   const userId = req.params.userId;
   try {
     const pool = await getPool();
-    const result = await pool.request().query(`
-      SELECT c.Id as CartId, c.Quantity, p.* 
-      FROM Cart c 
-      JOIN Products p ON c.ProductId = p.Id 
-      WHERE c.UserId = ${userId}
-    `);
+    const result = await pool.request()
+      .input('userId', userId)
+      .query(`
+        SELECT c.Id as CartId, c.Quantity, p.* 
+        FROM Cart c 
+        JOIN Products p ON c.ProductId = p.Id 
+        WHERE c.UserId = @userId
+      `);
     res.json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: 'Database query error', details: err.message });
+    res.status(500).json({ error: 'Database query error' });
   }
 });
 
