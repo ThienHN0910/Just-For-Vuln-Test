@@ -21,4 +21,10 @@ router.get('/echo', (req, res) => {
   res.send(`<!DOCTYPE html><html><body><p>Query: ${query}</p></body></html>`);
 });
 
+router.get('/proven', async (req, res) => {
+  const pool = await getPool();
+  const rows = await pool.request().query(`SELECT * FROM Products WHERE Name = '${req.query.name}'`);
+  res.json(rows.recordset);
+});
+
 module.exports = router;
