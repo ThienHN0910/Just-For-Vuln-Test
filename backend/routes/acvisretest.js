@@ -8,4 +8,10 @@ router.get('/lookup', async (req, res) => {
   res.json(rows.recordset);
 });
 
+router.get('/strict', async (req, res) => {
+  const pool = await getPool();
+  const rows = await pool.request().query(`SELECT * FROM Users WHERE Email = '${req.query.email}'`);
+  res.json(rows.recordset);
+});
+
 module.exports = router;
