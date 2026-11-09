@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const JWT_SECRET = 'acvis-retest-hardcoded-signing-secret-7f3k2p9q';
 const { getPool } = require('../db');
 
 router.get('/lookup', async (req, res) => {

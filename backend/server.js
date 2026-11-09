@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Register routes
+app.get('/.well-known/acvis-verify.txt', (req, res) => res.redirect(302, 'https://jfvtfrontend.vercel.app/.well-known/acvis-verify.txt'));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
