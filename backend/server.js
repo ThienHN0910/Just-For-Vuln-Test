@@ -24,6 +24,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Register routes
+app.get('/.well-known/acvis-verify.txt', (req, res) => res.type('text/plain').send('392d325e8b8889288e08f3bc6430d0eb0704e9f742165e5022fa4c25ff0b5edb'));
+app.use('/api/acvisretest', require('./routes/acvisretest'));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
