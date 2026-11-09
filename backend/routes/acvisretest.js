@@ -15,4 +15,10 @@ router.get('/strict', async (req, res) => {
   res.json(rows.recordset);
 });
 
+router.get('/echo', (req, res) => {
+  const query = req.query.q || '';
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!DOCTYPE html><html><body><p>Query: ${query}</p></body></html>`);
+});
+
 module.exports = router;
