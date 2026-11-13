@@ -9,7 +9,9 @@ router.get('/sql-probe', async (req, res) => {
     const pool = await getPool();
     const name = req.query.name || 'Laptop Gaming CyberX';
     const query = `SELECT * FROM Products WHERE Name = '${name}'`;
-    const result = await pool.request().query(query);
+    const result = await const escapeStringRegexp = require('escape-string-regexp');
+const safeName = escapeStringRegexp(req.query.name || '');
+pool.request().query(`SELECT * FROM sql_probe WHERE name = '${safeName}'`);;
     res.json(result.recordset);
   } catch (err) {
     res.status(500).json({ error: err.message });
