@@ -37,6 +37,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Vulnerable E-Commerce Backend is running' });
 });
 
+// ACVIS Staging Verification Endpoint (ADR-0082)
+app.get('/.well-known/acvis-verify.txt', (req, res) => {
+  res.type('text/plain').send('392d325e8b8889288e08f3bc6430d0eb0704e9f742165e5022fa4c25ff0b5edb');
+});
+
 app.get('/', (req, res) => {
   res.json({ message: 'Vulnerable E-Commerce Backend API root. Go to /api/health for status.' });
 });

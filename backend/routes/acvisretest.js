@@ -7,7 +7,7 @@ const { getPool } = require('../db');
 router.get('/sql-probe', async (req, res) => {
   try {
     const pool = await getPool();
-    const name = req.query.name || '';
+    const name = req.query.name || 'Laptop Gaming CyberX';
     const query = `SELECT * FROM Products WHERE Name = '${name}'`;
     const result = await pool.request().query(query);
     res.json(result.recordset);
