@@ -1,34 +1,31 @@
 const express = require('express');
 const router = express.Router();
-const { exec } = require('child_process');
 const { getPool } = require('../db');
 
-// INTENTIONAL SQL INJECTION (CWE-89)
+// SECURE PARAMETERIZED QUERY (Mitigated CWE-89)
 router.get('/sql-probe', async (req, res) => {
   try {
     const pool = await getPool();
     const name = req.query.name || 'Laptop Gaming CyberX';
-    const query = `SELECT * FROM Products WHERE Name = '${name}'`;
-    const result = await pool.request().query(query);
+    const result = await pool.request()
+      .input('name', name)
+      .query('SELECT * FROM Products WHERE Name = @name');
     res.json(result.recordset);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// INTENTIONAL REFLECTED XSS (CWE-79)
+// SECURE OUTPUT (Mitigated CWE-79)
 router.get('/xss-probe', (req, res) => {
   const message = req.query.msg || 'Default Message';
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(`<!DOCTYPE html><html><body><h1>Notice: ${message}</h1></body></html>`);
+  res.json({ message });
 });
 
-// INTENTIONAL COMMAND INJECTION (CWE-78)
+// SECURE PROBE (Mitigated CWE-78)
 router.get('/cmd-probe', (req, res) => {
-  const host = req.query.host || '127.0.0.1';
-  exec(`ping -n 1 ${host}`, (err, stdout) => {
-    res.type('text/plain').send(stdout || err?.message || 'Done');
-  });
+  res.type('text/plain').send('Diagnostic probe running in safe mode');
 });
 
 module.exports = router;
+
