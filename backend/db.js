@@ -1,4 +1,9 @@
-const mssql = require('mssql');
+let mssql = null;
+try {
+  mssql = require('mssql');
+} catch (e) {
+  console.warn('⚠️ mssql driver could not be loaded:', e.message);
+}
 const path = require('path');
 const { getFallbackDb, createFallbackPool } = require('./fallback-db');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
@@ -26,12 +31,12 @@ async function getPool() {
   }
 
   // If deployed on Vercel or explicitly configured, bypass blocked external MSSQL port immediately
-  if (process.env.VERCEL || process.env.USE_FALLBACK_DB === 'true') {
+  if (process.env.VERCEL || process.env.USE_FALLBACK_DB === 'true' || !mssql) {
     try {
       const fallbackDb = await getFallbackDb();
       globalPool = createFallbackPool(fallbackDb);
       globalPool.isFallback = true;
-      console.log('✅ Connected to In-Memory Fallback Database directly on Vercel.');
+      console.log('✅ Connected to In-Memory Fallback Database.');
       return globalPool;
     } catch (fallbackErr) {
       console.error('❌ Fallback DB Initialization Failed:', fallbackErr.message);

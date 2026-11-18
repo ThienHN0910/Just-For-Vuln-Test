@@ -2,13 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
 
-// IDOR - View user profile
+// View user profile
 router.get('/:id', async (req, res) => {
   const userId = req.params.id;
 
   try {
     const pool = await getPool();
-    const result = await pool.request().query(`SELECT Id, Username, FullName, Email, Bio, Role, Avatar FROM Users WHERE Id = ${userId}`);
+    const result = await pool.request()
+      .input('userId', userId)
+      .query('SELECT Id, Username, FullName, Email, Bio, Role, Avatar FROM Users WHERE Id = @userId');
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -20,7 +22,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// IDOR & Stored XSS - Update user profile
+// Update user profile
 router.put('/:id', async (req, res) => {
   const userId = req.params.id;
   const { fullName, email, bio, avatar } = req.body;
@@ -29,11 +31,17 @@ router.put('/:id', async (req, res) => {
     const pool = await getPool();
     const query = `
       UPDATE Users 
-      SET FullName = '${fullName}', Email = '${email}', Bio = '${bio}', Avatar = '${avatar}'
-      WHERE Id = ${userId}
+      SET FullName = @fullName, Email = @email, Bio = @bio, Avatar = @avatar
+      WHERE Id = @userId
     `;
 
-    await pool.request().query(query);
+    await pool.request()
+      .input('userId', userId)
+      .input('fullName', fullName || '')
+      .input('email', email || '')
+      .input('bio', bio || '')
+      .input('avatar', avatar || '')
+      .query(query);
 
     res.json({ message: 'Profile updated successfully', userId });
   } catch (err) {

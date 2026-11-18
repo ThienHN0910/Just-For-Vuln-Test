@@ -2,55 +2,48 @@ const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
 
-// Get all products or search (VULNERABILITY: SQL Injection stacked query support)
+// Get all products or search by keyword (CWE-89: SQL Injection via search query)
 router.get('/', async (req, res) => {
-  const search = req.query.search || '';
-  const category = req.query.category || '';
-
-try {
-    const pool = await getPool();
-    let query = `SELECT * FROM Products`;
-    if (category) {
-      // INTENTIONAL SQL INJECTION (CWE-89): Boolean differential & time-based delay verification
-      query = `SELECT * FROM Products WHERE Category = '${category}'`;
-    } else if (search) {
-      // INTENTIONAL SQL INJECTION (CWE-89): Stacked query & string concatenation verification
-      query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
-    }
-    console.log('[DEBUG Product Query]:', query);
-
-    const result = await pool.request().query(query);
-
-    // If query returns multiple recordsets (stacked query injection like SELECT * FROM Users),
-    // send back all recordsets raw so security testers can inspect extracted data!
-    if (result.recordsets && result.recordsets.length > 1) {
-      return res.json({
-        searchTerm: search,
-        products: result.recordsets[0],
-        rawRecordsets: result.recordsets, // Extra leaked stacked query results!
-        rawResult: result
-      });
-    }
-
-    res.json({
-      searchTerm: search,
-      products: result.recordset || []
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Database query error', details: err.message, queryExecuted: req.query.search });
-  }
-});
-
-// Get single product details & its reviews
-router.get('/:id', async (req, res) => {
-  const productId = req.params.id;
+  const search = req.query.search;
+  const category = req.query.category;
 
   try {
     const pool = await getPool();
-    const prodResult = await pool.request().query(`SELECT * FROM Products WHERE Id = ${productId}`);
-    const reviewsResult = await pool.request().query(
-      `SELECT r.*, u.Username FROM Reviews r JOIN Users u ON r.UserId = u.Id WHERE r.ProductId = ${productId}`
-    );
+    let query = 'SELECT * FROM Products';
+
+    if (search) {
+      // VULNERABILITY: SQL query concatenation allows SQL injection
+      query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
+    } else if (category) {
+      query = `SELECT * FROM Products WHERE Category = '${category}'`;
+    }
+
+    const result = await pool.request().query(query);
+
+    res.json({
+      searchTerm: search || null,
+      products: result.recordset || []
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Database query error', details: err.message });
+  }
+});
+
+// Get single product details & its reviews (SECURE: Parameterized Query)
+router.get('/:id', async (req, res) => {
+  const productId = parseInt(req.params.id, 10);
+  if (isNaN(productId)) {
+    return res.status(400).json({ error: 'Invalid product ID' });
+  }
+
+  try {
+    const pool = await getPool();
+    const prodResult = await pool.request()
+      .input('id', productId)
+      .query('SELECT * FROM Products WHERE Id = @id');
+    const reviewsResult = await pool.request()
+      .input('id', productId)
+      .query('SELECT r.*, u.Username FROM Reviews r JOIN Users u ON r.UserId = u.Id WHERE r.ProductId = @id');
 
     if (prodResult.recordset.length === 0) {
       return res.status(404).json({ error: 'Product not found' });
@@ -65,15 +58,22 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Add review (VULNERABILITY: Stored XSS)
+// Add review (SECURE: Parameterized Query)
 router.post('/:id/reviews', async (req, res) => {
-  const productId = req.params.id;
+  const productId = parseInt(req.params.id, 10);
   const { userId, comment, rating } = req.body;
+  if (isNaN(productId)) {
+    return res.status(400).json({ error: 'Invalid product ID' });
+  }
 
   try {
     const pool = await getPool();
-    const query = `INSERT INTO Reviews (ProductId, UserId, Comment, Rating) VALUES (${productId}, ${userId || 1}, '${comment}', ${rating || 5})`;
-    await pool.request().query(query);
+    await pool.request()
+      .input('productId', productId)
+      .input('userId', parseInt(userId, 10) || 1)
+      .input('comment', String(comment || ''))
+      .input('rating', parseInt(rating, 10) || 5)
+      .query('INSERT INTO Reviews (ProductId, UserId, Comment, Rating) VALUES (@productId, @userId, @comment, @rating)');
 
     res.json({ message: 'Review added successfully' });
   } catch (err) {
@@ -81,11 +81,12 @@ router.post('/:id/reviews', async (req, res) => {
   }
 });
 
-// Reflected XSS Preview Endpoint (CWE-79 Dynamic Verification Probe)
+// Live product search preview banner (CWE-79: Reflected Cross-Site Scripting)
 router.get('/preview/echo', (req, res) => {
-  const query = req.query.q || req.query.search || '';
+  const q = req.query.q || req.query.search || '';
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(`<!DOCTYPE html><html><body><div id="search-preview"><h1>Search Preview</h1><p>Query: ${query}</p></div></body></html>`);
+  // VULNERABILITY: Raw reflection of untrusted user input without sanitization
+  res.send(`<!DOCTYPE html><html><body><div id="search-preview"><h1>Search Preview</h1><p>Query: ${q}</p></div></body></html>`);
 });
 
 module.exports = router;

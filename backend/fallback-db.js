@@ -97,7 +97,12 @@ function createFallbackPool(engine) {
   return {
     connected: true,
     request() {
+      const inputs = {};
       return {
+        input(name, value) {
+          inputs[name] = value;
+          return this;
+        },
         async query(sqlString) {
           try {
             // Realistic delay simulation for time-based blind SQL injection testing (Vercel serverless safe)
@@ -114,7 +119,20 @@ function createFallbackPool(engine) {
               await new Promise(resolve => setTimeout(resolve, Math.min(seconds, 3) * 1000));
             }
 
-            const cleanSql = convertMssqlToSqlite(sqlString);
+            let resolvedSql = sqlString;
+            for (const [k, v] of Object.entries(inputs)) {
+              let valStr;
+              if (v === null || v === undefined) {
+                valStr = 'NULL';
+              } else if (typeof v === 'number') {
+                valStr = String(v);
+              } else {
+                valStr = `'${String(v).replace(/'/g, "''")}'`;
+              }
+              resolvedSql = resolvedSql.replace(new RegExp(`@${k}\\b`, 'g'), valStr);
+            }
+
+            const cleanSql = convertMssqlToSqlite(resolvedSql);
             let recordset = [];
 
             if (engine.type === 'sql.js') {

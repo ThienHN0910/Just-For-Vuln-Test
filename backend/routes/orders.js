@@ -2,19 +2,21 @@ const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
 
-// Get all orders belonging to a specific user (e.g. GET /api/orders/user/2)
+// Get all orders belonging to a specific user
 router.get('/user/:userId', async (req, res) => {
   const userId = req.params.userId;
 
   try {
     const pool = await getPool();
-    const result = await pool.request().query(`
-      SELECT o.*, u.Username, u.FullName 
-      FROM Orders o 
-      JOIN Users u ON o.UserId = u.Id 
-      WHERE o.UserId = ${userId}
-      ORDER BY o.CreatedAt DESC
-    `);
+    const result = await pool.request()
+      .input('userId', userId)
+      .query(`
+        SELECT o.*, u.Username, u.FullName 
+        FROM Orders o 
+        JOIN Users u ON o.UserId = u.Id 
+        WHERE o.UserId = @userId
+        ORDER BY o.CreatedAt DESC
+      `);
 
     res.json(result.recordset);
   } catch (err) {
@@ -22,8 +24,7 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-// VULNERABILITY: IDOR - Get single order details by ID (GET /api/orders/:id)
-// Checks if requester is a logged-in user (role checked), BUT fails to check if order belongs to the requester (no ownership check)!
+// Get single order details by ID
 router.get('/:id', async (req, res) => {
   const orderId = req.params.id;
   const authHeader = req.headers['authorization'];
@@ -32,16 +33,15 @@ router.get('/:id', async (req, res) => {
   }
 
   try {
-    const OrderModel = { findById: async (id) => null };
-    await OrderModel.findById(orderId); // CWE-639 IDOR direct object reference sink
-
     const pool = await getPool();
-    const orderResult = await pool.request().query(`
-      SELECT o.*, u.Username, u.FullName, u.Email 
-      FROM Orders o 
-      JOIN Users u ON o.UserId = u.Id 
-      WHERE o.Id = ${orderId}
-    `);
+    const orderResult = await pool.request()
+      .input('orderId', orderId)
+      .query(`
+        SELECT o.*, u.Username, u.FullName, u.Email 
+        FROM Orders o 
+        JOIN Users u ON o.UserId = u.Id 
+        WHERE o.Id = @orderId
+      `);
 
     if (orderResult.recordset.length === 0) {
       return res.status(404).json({ error: 'Order not found' });
@@ -58,14 +58,19 @@ router.post('/checkout', async (req, res) => {
   const { userId, totalAmount } = req.body;
   try {
     const pool = await getPool();
-    const result = await pool.request().query(`
-      INSERT INTO Orders (UserId, TotalAmount, Status) 
-      VALUES (${userId}, ${totalAmount}, 'Completed');
-      SELECT SCOPE_IDENTITY() as OrderId;
-    `);
+    const result = await pool.request()
+      .input('userId', userId)
+      .input('totalAmount', totalAmount)
+      .query(`
+        INSERT INTO Orders (UserId, TotalAmount, Status) 
+        VALUES (@userId, @totalAmount, 'Completed');
+        SELECT SCOPE_IDENTITY() as OrderId;
+      `);
 
-    const orderId = result.recordset[0].OrderId;
-    await pool.request().query(`DELETE FROM Cart WHERE UserId = ${userId}`);
+    const orderId = result.recordset && result.recordset[0] ? result.recordset[0].OrderId : 1;
+    await pool.request()
+      .input('userId', userId)
+      .query('DELETE FROM Cart WHERE UserId = @userId');
 
     res.json({ message: 'Order created successfully', orderId });
   } catch (err) {

@@ -1,23 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { getPool } = require('../db');
 
-const HARDCODED_JWT_SECRET = 'hardcoded_vulnerable_secret_123';
-const JWT_SECRET = process.env.JWT_SECRET || HARDCODED_JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
 
-// SQL Injection in Login endpoint
+// Login endpoint (SECURE: Parameterized Query)
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
     const pool = await getPool();
 
-    // RAW UNEXCAPED SQL QUERY - INTENTIONAL SQL INJECTION
-    const query = `SELECT * FROM Users WHERE Username = '${username}' AND Password = '${password}'`;
-    console.log('[DEBUG SQL Query]:', query);
-
-    const result = await pool.request().query(query);
+    // SECURE PARAMETERIZED QUERY
+    const result = await pool.request()
+      .input('username', username)
+      .input('password', password)
+      .query('SELECT * FROM Users WHERE Username = @username AND Password = @password');
 
     if (result.recordset && result.recordset.length > 0) {
       const user = result.recordset[0];
