@@ -72,12 +72,18 @@ router.post('/:id/reviews', async (req, res) => {
 
   try {
     const pool = await getPool();
-    const query = `INSERT INTO Reviews (ProductId, UserId, Comment, Rating) VALUES (${productId}, ${userId || 1}, '${comment}', ${rating || 5})`;
-    await pool.request().query(query);
+    const query = `INSERT INTO Reviews (ProductId, UserId, Comment, Rating) VALUES (@productId, @userId, @comment, @rating)`;
+    
+    await pool.request()
+      .input('productId', productId)
+      .input('userId', userId || 1)
+      .input('comment', comment)
+      .input('rating', rating || 5)
+      .query(query);
 
     res.json({ message: 'Review added successfully' });
   } catch (err) {
-    res.status(500).json({ error: 'Database insert error', details: err.message });
+    res.status(500).json({ error: 'Database insert error' });
   }
 });
 
