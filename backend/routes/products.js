@@ -89,4 +89,22 @@ router.get('/preview/echo', (req, res) => {
   res.send(`<!DOCTYPE html><html><body><div id="search-preview"><h1>Search Preview</h1><p>Query: ${q}</p></div></body></html>`);
 });
 
+// Quick product coupon validation (CWE-89: SQL Injection)
+router.get('/coupons/validate', async (req, res) => {
+  const code = req.query.code;
+  if (!code) {
+    return res.status(400).json({ error: 'Coupon code required' });
+  }
+
+  try {
+    const pool = await getPool();
+    // VULNERABILITY: Raw concatenation allows SQL Injection
+    const query = `SELECT * FROM Coupons WHERE Code = '${code}'`;
+    const result = await pool.request().query(query);
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: 'Database query error', details: err.message });
+  }
+});
+
 module.exports = router;
