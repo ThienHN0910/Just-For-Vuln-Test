@@ -88,5 +88,25 @@ router.get('/preview/echo', (req, res) => {
   // VULNERABILITY: Raw reflection of untrusted user input without sanitization
   res.send(`<!DOCTYPE html><html><body><div id="search-preview"><h1>Search Preview</h1><p>Query: ${q}</p></div></body></html>`);
 });
+  
+router.get('/analytics/rankings', async (req, res) => {
+  const sortBy = req.query.sortBy || 'Price';
+  const order = req.query.order || 'DESC';
+
+  try {
+    const pool = await getPool();
+
+    const query = `SELECT Category, COUNT(*) AS TotalProducts, AVG(Price) AS AvgPrice, MAX(Price) AS MaxPrice FROM Products GROUP BY Category ORDER BY ${sortBy} ${order}`;
+    const result = await pool.request().query(query);
+
+    res.json({
+      metric: sortBy,
+      order: order,
+      rankings: result.recordset || []
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Database query error', details: err.message });
+  }
+});
 
 module.exports = router;
