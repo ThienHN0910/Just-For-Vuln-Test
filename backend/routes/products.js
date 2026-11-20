@@ -10,15 +10,17 @@ router.get('/', async (req, res) => {
   try {
     const pool = await getPool();
     let query = 'SELECT * FROM Products';
+    const params = [];
 
     if (search) {
-      // VULNERABILITY: SQL query concatenation allows SQL injection
-      query = `SELECT * FROM Products WHERE Name LIKE '%${search}%' OR Description LIKE '%${search}%'`;
+      query += " WHERE Name LIKE '%' + @p1 + '%" OR Description LIKE '%' + @p2 + '%";
+      params.push(search, search);
     } else if (category) {
-      query = `SELECT * FROM Products WHERE Category = '${category}'`;
+      query += " WHERE Category = @p3";
+      params.push(category);
     }
 
-    const result = await pool.request().query(query);
+    const result = await pool.request().query(query, params);
 
     res.json({
       searchTerm: search || null,
