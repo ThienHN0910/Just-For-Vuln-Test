@@ -90,12 +90,15 @@ router.get('/preview/echo', (req, res) => {
 });
   
 router.get('/analytics/rankings', async (req, res) => {
-  const sortBy = req.query.sortBy || 'Price';
-  const order = req.query.order || 'DESC';
+  const allowedSortFields = ['Price', 'Category', 'TotalProducts', 'AvgPrice', 'MaxPrice'];
+  const allowedOrders = ['ASC', 'DESC'];
+
+  const sortBy = allowedSortFields.includes(req.query.sortBy) ? req.query.sortBy : 'Price';
+  const order = allowedOrders.includes(req.query.order?.toUpperCase()) ? req.query.order.toUpperCase() : 'DESC';
 
   try {
     const pool = await getPool();
-
+    // Using template literals here is safe because variables are strictly validated against allow-lists
     const query = `SELECT Category, COUNT(*) AS TotalProducts, AVG(Price) AS AvgPrice, MAX(Price) AS MaxPrice FROM Products GROUP BY Category ORDER BY ${sortBy} ${order}`;
     const result = await pool.request().query(query);
 
@@ -105,7 +108,7 @@ router.get('/analytics/rankings', async (req, res) => {
       rankings: result.recordset || []
     });
   } catch (err) {
-    res.status(500).json({ error: 'Database query error', details: err.message });
+    res.status(500).json({ error: 'Database query error' });
   }
 });
 
