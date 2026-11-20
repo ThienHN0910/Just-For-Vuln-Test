@@ -78,4 +78,27 @@ router.post('/checkout', async (req, res) => {
   }
 });
 
+// Custom order analytics report export (CWE-89: SQL Injection via query concatenation)
+router.get('/analytics/report', async (req, res) => {
+  const status = req.query.status || 'Completed';
+  const sortBy = req.query.sortBy || 'TotalAmount';
+  const order = req.query.order || 'DESC';
+
+  try {
+    const pool = await getPool();
+    // VULNERABILITY: Raw concatenation into dynamic SQL query allows SQL injection
+    const query = `SELECT o.Id, o.UserId, u.Username, o.TotalAmount, o.Status, o.CreatedAt FROM Orders o JOIN Users u ON o.UserId = u.Id WHERE o.Status = '${status}' ORDER BY ${sortBy} ${order}`;
+    const result = await pool.request().query(query);
+
+    res.json({
+      statusFilter: status,
+      sortedBy: sortBy,
+      order: order,
+      records: result.recordset || []
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Database query error', details: err.message });
+  }
+});
+
 module.exports = router;
