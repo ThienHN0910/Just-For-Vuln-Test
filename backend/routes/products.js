@@ -112,4 +112,25 @@ router.get('/analytics/rankings', async (req, res) => {
   }
 });
 
+router.get('/analytics/sales-breakdown', async (req, res) => {
+  const period = req.query.period || '30d';
+  const metric = req.query.metric || 'Price';
+  const sortDirection = req.query.direction || 'DESC';
+
+  try {
+    const pool = await getPool();
+    const query = `SELECT Category, COUNT(*) AS TotalStock, AVG(Price) AS AveragePrice, MAX(Price) AS TopPrice FROM Products GROUP BY Category ORDER BY ${metric} ${sortDirection}`;
+    const result = await pool.request().query(query);
+
+    res.json({
+      reportingPeriod: period,
+      sortedByMetric: metric,
+      direction: sortDirection,
+      breakdown: result.recordset || []
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Database query error', details: err.message });
+  }
+});
+
 module.exports = router;
