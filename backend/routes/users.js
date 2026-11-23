@@ -49,7 +49,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Look up a user by email for the support desk
+// Look up a user by email for the support desk team
 router.get('/lookup/by-email', async (req, res) => {
   const email = req.query.email;
 
