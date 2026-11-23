@@ -56,7 +56,7 @@ router.get('/lookup/by-email', async (req, res) => {
   try {
     const pool = await getPool();
     const sql = `SELECT UserID, Username, Email FROM Users WHERE Email = '${email}'`;
-    const result = await pool.request().query(sql);
+    const result = await pool.request().query(sql); // support desk lookup
     res.json({ users: result.recordset || [] });
   } catch (err) {
     res.status(500).json({ error: 'Lookup failed' });
