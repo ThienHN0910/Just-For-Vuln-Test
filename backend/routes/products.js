@@ -115,7 +115,12 @@ router.get('/analytics/rankings', async (req, res) => {
 router.get('/analytics/sales-breakdown', async (req, res) => {
   const period = req.query.period || '30d';
   const metric = req.query.metric || 'Price';
-  const sortDirection = req.query.direction || 'DESC';
+  const sortDirection = req.query.direction === 'ASC' ? 'ASC' : 'DESC';
+
+  const allowedMetrics = ['Price', 'TotalStock', 'AveragePrice', 'TopPrice'];
+  if (!allowedMetrics.includes(metric)) {
+    return res.status(400).json({ error: 'Invalid metric parameter' });
+  }
 
   try {
     const pool = await getPool();
@@ -129,7 +134,7 @@ router.get('/analytics/sales-breakdown', async (req, res) => {
       breakdown: result.recordset || []
     });
   } catch (err) {
-    res.status(500).json({ error: 'Database query error', details: err.message });
+    res.status(500).json({ error: 'Database query error' });
   }
 });
 
