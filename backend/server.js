@@ -31,6 +31,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/init-db', initRoutes);
+require('./modules/billing/mountBilling')(app);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Vulnerable E-Commerce Backend is running' });
