@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 require('dotenv').config(); // Fallback to current dir .env if exists
@@ -31,7 +32,12 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/init-db', initRoutes);
-require('./modules/billing/mountBilling')(app);
+// Feature routes that ship in later commits are mounted only once their file exists,
+// so the API keeps starting while they are still in review.
+const hasRoute = (file) => fs.existsSync(path.join(__dirname, 'routes', file));
+if (hasRoute('demo1-product-search.js')) app.use('/api/storefront', require('./routes/demo1-product-search'));
+require('./modules/reports/registerReports')(app);
+if (hasRoute('demo3-price-filter.js')) app.use('/api/catalog', require('./routes/demo3-price-filter'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Vulnerable E-Commerce Backend is running' });

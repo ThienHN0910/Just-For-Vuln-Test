@@ -49,18 +49,4 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Look up a user by email for the support desk
-router.get('/lookup/by-email', async (req, res) => {
-  const email = req.query.email;
-
-  try {
-    const pool = await getPool();
-    const sql = `SELECT UserID, Username, Email FROM Users WHERE Email = '${email}'`;
-    const result = await pool.request().query(sql); // support desk lookup
-    res.json({ users: result.recordset || [] });
-  } catch (err) {
-    res.status(500).json({ error: 'Lookup failed' });
-  }
-});
-
 module.exports = router;
