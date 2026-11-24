@@ -78,4 +78,18 @@ router.post('/checkout', async (req, res) => {
   }
 });
 
+// Search a customer's orders by status for the order history page
+router.get('/search/by-status', async (req, res) => {
+  const status = req.query.status;
+
+  try {
+    const pool = await getPool();
+    const sql = `SELECT OrderID, OrderDate, Status, TotalAmount FROM Orders WHERE Status = '${status}'`;
+    const result = await pool.request().query(sql);
+    res.json({ orders: result.recordset || [] });
+  } catch (err) {
+    res.status(500).json({ error: 'Order search failed' });
+  }
+});
+
 module.exports = router;
