@@ -103,3 +103,46 @@ INSERT INTO Reviews (ProductId, UserId, Comment, Rating) VALUES
 (2, 3, 'Pin dùng thoải mái 1 ngày rưỡi. Màn hình rực rỡ!', 4),
 (2, 4, '<img src=x onerror="console.log(''XSS Payload Loaded from Review'')">Thiết kế đẹp nhưng hơi nặng tay.', 3),
 (5, 2, 'Gõ rất êm tay, âm thanh thõa mãn! <iframe src="javascript:alert(''XSS iframe'')"></iframe>', 5);
+
+-- Tickets Table (Support system for Case 1: Known vuln in dataset)
+IF OBJECT_ID('dbo.Tickets', 'U') IS NOT NULL DROP TABLE dbo.Tickets;
+CREATE TABLE Tickets (
+    TicketID INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerEmail NVARCHAR(100) NOT NULL,
+    Subject NVARCHAR(255) NOT NULL,
+    Status NVARCHAR(50) DEFAULT 'open',
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+INSERT INTO Tickets (CustomerEmail, Subject, Status) VALUES
+('john@example.com', 'Cannot track order delivery', 'open'),
+('jane@example.com', 'Request invoice download', 'open'),
+('alice@sec.test', 'Bug report on checkout', 'closed');
+
+-- SupplierReviews Table (For Case 2: Novel vuln NOT in dataset)
+IF OBJECT_ID('dbo.SupplierReviews', 'U') IS NOT NULL DROP TABLE dbo.SupplierReviews;
+CREATE TABLE SupplierReviews (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    VendorCode NVARCHAR(50) NOT NULL,
+    ReviewScore INT DEFAULT 5,
+    Comments NVARCHAR(MAX),
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+INSERT INTO SupplierReviews (VendorCode, ReviewScore, Comments) VALUES
+('VEND_001', 5, 'Fast delivery and reliable components'),
+('VEND_002', 4, 'Quality acceptable, slight shipment delay');
+
+-- VendorRatings Table (For Case 3: Structurally similar to Case 2 for Active Learning)
+IF OBJECT_ID('dbo.VendorRatings', 'U') IS NOT NULL DROP TABLE dbo.VendorRatings;
+CREATE TABLE VendorRatings (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    VendorCode NVARCHAR(50) NOT NULL,
+    RatingGrade NVARCHAR(10) DEFAULT 'A',
+    FeedbackNote NVARCHAR(MAX),
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+INSERT INTO VendorRatings (VendorCode, RatingGrade, FeedbackNote) VALUES
+('VEND_001', 'A', 'Tier 1 certified electronic parts supplier'),
+('VEND_002', 'B', 'Secondary accessories supplier');
