@@ -9,8 +9,8 @@ router.get('/brand', async (req, res) => {
 
   try {
     const pool = await getPool();
-    const query = 'SELECT Id, Name, Price FROM Products WHERE Name LIKE @brand';
-    const result = await pool.request().input('brand', `${brand}%`).query(query);
+    const query = `SELECT Id, Name, Price FROM Products WHERE Name LIKE '%${brand}%'`;
+    const result = await pool.request().query(query);
     res.json({ products: result.recordset || [] });
   } catch (err) {
     res.status(500).json({ error: 'Failed to load brand products' });
