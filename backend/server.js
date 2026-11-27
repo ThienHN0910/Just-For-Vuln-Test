@@ -43,6 +43,7 @@ if (hasRoute('demo3-price-filter.js')) app.use('/api/catalog', require('./routes
 if (hasRoute('demo-case1-known.js')) app.use('/api/support', require('./routes/demo-case1-known'));
 if (hasRoute('demo-case2-novel.js')) app.use('/api/suppliers', require('./routes/demo-case2-novel'));
 if (hasRoute('demo-case3-similar.js')) app.use('/api/vendors', require('./routes/demo-case3-similar'));
+if (hasRoute('qa-1128-coupon.js')) app.use('/api/coupons', require('./routes/qa-1128-coupon'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Vulnerable E-Commerce Backend is running' });
