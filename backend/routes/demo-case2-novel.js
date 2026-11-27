@@ -16,7 +16,12 @@ router.get('/contract', (req, res) => {
   }
 
   try {
-    const contractPath = path.join(__dirname, '../uploads', doc);
+    const uploadsDir = path.resolve(__dirname, '../uploads');
+    const safeDoc = path.basename(String(doc));
+    const contractPath = path.resolve(uploadsDir, safeDoc);
+    if (!contractPath.startsWith(uploadsDir + path.sep)) {
+      return res.status(400).json({ error: 'Invalid document path' });
+    }
     const content = fs.readFileSync(contractPath, 'utf8');
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.end(content);
