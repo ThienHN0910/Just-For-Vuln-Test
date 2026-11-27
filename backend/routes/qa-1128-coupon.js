@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getPool } = require('../db');
 
-// Storefront: list products of one brand for the coupon banner.
+// Storefront: list products of one brand for the coupon banner (brand is bound as a parameter).
 // GET /api/coupons/brand?brand=
 router.get('/brand', async (req, res) => {
   const brand = req.query.brand;
