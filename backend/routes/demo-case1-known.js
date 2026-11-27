@@ -11,8 +11,8 @@ router.get('/tickets', async (req, res) => {
 
   try {
     const pool = await getPool();
-    const ticketSql = `SELECT TicketID, Subject, Status FROM Tickets WHERE CustomerEmail = '${customer}' AND Status = 'open'`;
-    const tickets = await pool.request().query(ticketSql);
+    const ticketSql = `SELECT TicketID, Subject, Status FROM Tickets WHERE CustomerEmail = @customer AND Status = 'open'`;
+    const tickets = await pool.request().input('customer', customer).query(ticketSql);
     res.json({ tickets: tickets.recordset || [] });
   } catch (err) {
     res.status(500).json({ error: 'Ticket lookup failed' });
